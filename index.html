@@ -514,6 +514,11 @@ footer nav a,#contact a{display:inline-block;padding:11px 4px}
 .qband blockquote p{max-width:none;width:100%;text-wrap:balance;font-size:clamp(23px,4.6vw,52px)}
 .qnote{max-width:40em}
 @media(max-width:700px){.qband .wrap{padding-left:16px;padding-right:16px}.qband blockquote p{font-size:clamp(22px,6.2vw,30px)}}
+.joinband{background:var(--navy);background-image:radial-gradient(760px 400px at 50% 130%,var(--navy2),transparent 70%);text-align:center;padding:92px 0}
+.join-k{font-family:'Manrope',sans-serif;font-weight:800;font-size:clamp(16px,2.4vw,22px);letter-spacing:.22em;text-transform:uppercase;color:var(--org);margin:0 0 14px}
+.join-t{display:block;font-family:'Manrope',sans-serif;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:-.01em;line-height:1.08;font-size:clamp(26px,8.4vw,92px);margin:0 auto 34px}
+.join-t:hover{color:var(--tint)}
+@media(max-width:560px){.joinband{padding:72px 0}}
 </style>
 </head>
 <body>
@@ -525,7 +530,7 @@ footer nav a,#contact a{display:inline-block;padding:11px 4px}
     <nav id="menu" aria-label="Navigation principale">
       <a href="#temperaments">Les tempéraments</a>
       <a href="#services">Je démarre</a>
-      <a href="#organisations">Organisations</a>
+      <a href="#organisations">Entreprises et Organisations</a>
       <a href="#histoire">Mon histoire</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -768,8 +773,15 @@ footer nav a,#contact a{display:inline-block;padding:11px 4px}
       <li><span>Email</span><a href="mailto:monsieurtemperament@gmail.com">monsieurtemperament@gmail.com</a></li>
       <li><span>Facebook</span><a href="https://www.facebook.com/share/1CYhkNfd17/" target="_blank" rel="noopener">Mr Tempérament</a></li>
       <li><span>LinkedIn</span><a href="https://www.linkedin.com/in/d%C3%A9odat-gbessinon" target="_blank" rel="noopener">Déodat Gbessinon</a></li>
-      <li><span>Communauté</span><a href="https://forms.gle/Vdu38ThniyUcXPYN7" target="_blank" rel="noopener">Rejoindre les Rendez-vous Métamorphose (WhatsApp)</a></li>
     </ul>
+  </div>
+</section>
+
+<section class="joinband" id="communaute" aria-label="Communauté Métamorphose">
+  <div class="wrap">
+    <p class="join-k">Rejoignez la</p>
+    <a class="join-t" href="https://forms.gle/Vdu38ThniyUcXPYN7" target="_blank" rel="noopener">Communauté<br>Métamorphose</a>
+    <a class="btn btn-org" href="https://forms.gle/Vdu38ThniyUcXPYN7" target="_blank" rel="noopener">Je m'inscris</a>
   </div>
 </section>
 
@@ -780,7 +792,7 @@ footer nav a,#contact a{display:inline-block;padding:11px 4px}
     <div class="foot">
       <a class="brand" href="#top" aria-label="Mr Tempérament, retour en haut"><img src="images/logo.png" alt="Mr Tempérament" width="187" height="150"></a>
       <nav aria-label="Pied de page">
-        <a href="#temperaments">Les tempéraments</a><a href="#services">Je démarre</a><a href="#organisations">Organisations</a><a href="#histoire">Mon histoire</a><a href="#acces" data-open="code">J'ai un code d'accès</a>
+        <a href="#temperaments">Les tempéraments</a><a href="#services">Je démarre</a><a href="#organisations">Entreprises et Organisations</a><a href="#histoire">Mon histoire</a><a href="#acces" data-open="code">J'ai un code d'accès</a>
       </nav>
     </div>
     <p class="legal">© 2026 Mr Tempérament — Déodat GBESSINON · Le DISC décrit des tendances de comportement ; ce n'est ni un diagnostic ni un avis médical ou psychologique.</p>
