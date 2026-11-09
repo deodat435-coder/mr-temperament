@@ -1070,7 +1070,7 @@ const App = {
   }
 };
 const S = {mode:'', tests:[], t:0, q:0, hist:[], backFn:null, where:'', resK:null, perm:{}, sc:zero(), res:{}, client:{name:'', email:'', phone:''}, code:'', show:true, label:'', cb:null, onIntake:null, pro:null};
-function reset(){ S.skipped = []; S.perm = {}; S.tests = []; S.t = 0; S.q = 0; S.hist = []; S.sc = zero(); S.res = {}; S.pro = null; S.show = true; S.code = ''; S.label = ''; S.doneSent = false; }
+function reset(){ S.skipped = []; S.perm = {}; S.tests = []; S.t = 0; S.q = 0; S.hist = []; S.sc = zero(); S.res = {}; S.pro = null; S.show = true; S.code = ''; S.label = ''; S.stepTitle = ''; S.doneSent = false; }
 
 /* ----- Reprise du test : la progression d'un test avec code est gardée sur l'appareil du client ----- */
 const PKEY = 'mt_progress_v1';
@@ -1332,9 +1332,11 @@ function makePdf(cap){
     doc.text(i + ' / ' + N, M + W, PH - 10.5, {align: 'right'});
   }
   const slug = name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  const tslug = String(pdfLabel() || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const tt = (S.where === 'viewResult' ? '' : S.stepTitle) || pdfLabel();
+  const tslug = String(tt || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
   if(cap){ const u = String(doc.output('datauristring')), i = u.indexOf('base64,'); return i < 0 ? '' : u.slice(i + 7); }   /* copie envoyée à Déodat, rien n'est téléchargé */
-  doc.save('Resultat-Mr-Temperament' + (tslug ? '-' + tslug : '') + (slug ? '-' + slug : '') + '.pdf');
+  const nw = new Date(), z = n => String(n).padStart(2, '0'), stamp = nw.getFullYear() + '-' + z(nw.getMonth() + 1) + '-' + z(nw.getDate()) + '-' + z(nw.getHours()) + 'h' + z(nw.getMinutes());
+  doc.save('Resultat-Mr-Temperament' + (tslug ? '-' + tslug : '') + (slug ? '-' + slug : '') + '-' + stamp + '.pdf');
 }
 /* Solution de secours (impression) si la génération directe échoue */
 function printFallback(){
@@ -1424,6 +1426,19 @@ function viewPrevQ(){
     cb: l => { S.sc[l]++; S.hist.push(l); S.q++; S.q >= PREVIEW.length ? viewPrevResult() : viewPrevQ(); },
     back: S.q > 0 ? () => undoQ(viewPrevQ) : null});
 }
+/* ----- Carte « accompagnement de 3 mois » proposée en fin de résultat ----- */
+function packCard(){
+  return '<div class="rb packcard noprint"><p class="kicker">Accompagnement de 3 mois</p><h4>Passer de la découverte à l\'action</h4>' +
+    '<p>Si vous souhaitez être accompagné(e) pas à pas : trois bilans, neuf séances de coaching de 1H30, le Bilan Miroir et l\'ebook offerts, et un soutien WhatsApp entre les séances.</p>' +
+    '<p class="pk-v">Valeur des éléments achetés séparément : <s data-fcfa="438500"></s></p>' +
+    '<p class="pk-p">Votre accompagnement : <strong data-fcfa="255000"></strong></p>' +
+    '<p class="pk-e">Vous économisez <span data-fcfa="183500"></span>, soit 42 %.</p>' +
+    '<div class="acts"><button class="btn btn-org" type="button" data-act="inscrire">Je démarre mon accompagnement</button>' +
+    '<button class="btn btn-line" type="button" data-act="packgo">Voir le détail</button></div></div>';
+}
+ACT.inscrire = () => { S.parcours = null; viewInscription(); };
+ACT.packgo = () => { App.close(true); if(/coaching\.html/i.test(location.pathname)){ const t = $('#trois-mois'); if(t) t.scrollIntoView(); } else location.href = 'coaching.html#trois-mois'; };
+
 function viewPrevResult(){
   const T = tops(S.sc), dual = T.length > 1, pe = T.map(l => DOMAINS.soimeme.personas[l]).join(' · ');
   S.prevPayload = {testChoisi: 'Test gratuit (5 questions)', temperamentDominant: T.join('+'), nomDuProfil: pe, scoreD: S.sc.D, scoreI: S.sc.I, scoreS: S.sc.S, scoreC: S.sc.C, temperamentSecondaire: ''};
@@ -1441,7 +1456,7 @@ function viewPrevResult(){
     '<button class="btn btn-navy btn-block" type="submit">Envoyer mes coordonnées</button></form></div>') +
     '<div class="next"><h3>Ce n\'est qu\'un début</h3><p>Cinq questions donnent une première tendance. Votre tempérament influence aussi votre couple, votre travail, votre rapport à l\'argent et à votre énergie. Découvrez comment il se manifeste, et comment en faire un vrai super-pouvoir.</p>' +
     '<div class="acts"><button class="btn btn-org" data-act="goto" data-to="#services">Découvrir le parcours</button>' +
-    '<button class="btn btn-ghost" data-act="goto" data-to="#temperaments">Comprendre les tempéraments</button></div></div>');
+    '<button class="btn btn-ghost" data-act="goto" data-to="#temperaments">Comprendre les tempéraments</button></div></div>' + packCard());
 }
 
 
@@ -1584,7 +1599,8 @@ const DEMO = {
 };
 function viewCode(prefill){
   App.set('<p class="kicker">Accès personnel</p><h2>Votre code d\'accès</h2>' +
-    '<p class="lead sm">Saisissez le code reçu après votre réservation ou votre commande.</p>' +
+    (savedParcours() && !prefill ? '<div class="rb pguide"><h4>Vous avez un parcours en cours</h4><div class="acts"><button class="btn btn-org" type="button" data-act="pcopen" data-code="' + esc(savedParcours()) + '">Reprendre mon parcours</button></div></div>' : '') +
+    '<p class="lead sm">Saisissez le code reçu après votre réservation ou votre commande' + (savedParcours() ? ', ou votre code de parcours (PC-…)' : '') + '.</p>' +
     '<form data-form="code" class="inline" novalidate><input name="code" placeholder="Votre code" aria-label="Code d\'accès" autocomplete="off" value="' + esc(prefill || '') + '"><button class="btn btn-navy" type="submit">Valider</button></form>' +
     '<div class="err" id="cerr" role="alert" hidden style="margin-top:14px"></div>' +
     '<p class="fine" style="margin-top:22px">Pas encore de code ? <a class="txt-link" href="' + wa('Bonjour, je souhaite obtenir un code d\'accès.') + '" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>.</p>');
@@ -1656,8 +1672,11 @@ async function openParcours(code){
     S.pdata = r; viewParcours(r, code);
   }catch(err){ fail('Chargement impossible pour le moment. Réessayez dans un instant.'); }
 }
+const PCKEY = 'mt_parcours_v1';
+const savedParcours = () => { try{ const c = localStorage.getItem(PCKEY); return /^PC-[A-Z0-9]{4,}$/.test(c || '') ? c : ''; }catch(e){ return ''; } };
 function viewParcours(r, code){
   S.parcours = code; S.where = 'parcours';
+  try{ localStorage.setItem(PCKEY, String(code).toUpperCase()); }catch(e){}
   const F = PARC[r.formule] || PARC.complet, first = String(r.client || '').split(' ')[0];
   const et = r.etapes || [], miroir = et.find(x => x.n === 0), waitM = x => x.n === 1 && miroir && !miroir.fait;
   const nxt = et.find(x => x.debloque && !x.fait && !waitM(x));
@@ -1672,11 +1691,12 @@ function viewParcours(r, code){
     let st, act, note = '';
     if(e.fait){ st = '<span class="pst ok">Terminé</span>'; act = e.token ? '<button class="btn btn-line" data-act="pview" data-token="' + esc(e.token) + '">Revoir mon résultat</button>' : ''; }
     else if(e.debloque && waitM(e)){ st = '<span class="pst lock">Après le Miroir</span>'; act = ''; note = '<p class="sm pnote">Passez d\'abord votre Bilan Miroir offert : ce bilan s\'ouvrira ici dès que le Miroir sera terminé.</p>'; }
-    else if(e.debloque){ st = '<span class="pst open">' + (nxt === e ? 'À faire maintenant' : 'Disponible') + '</span>'; act = '<button class="btn btn-org" data-act="pstep" data-code="' + esc(e.code) + '">Commencer' + (bonus ? ' mon Bilan Miroir' : '') + '</button>'; }
+    else if(e.debloque){ st = '<span class="pst open">' + (nxt === e ? 'À faire maintenant' : 'Disponible') + '</span>'; act = '<button class="btn btn-org" data-act="pstep" data-code="' + esc(e.code) + '" data-titre="' + esc(e.titre) + '">Commencer' + (bonus ? ' mon Bilan Miroir' : '') + '</button>'; }
     else { st = '<span class="pst lock">Le ' + esc(fmtDate(e.date)) + '</span>'; act = ''; }
     h += '<div class="rb pstep' + (nxt === e ? ' pnext' : '') + '"><div class="pst-h"><span class="pst-n">' + (bonus ? '★' : esc(e.n)) + '</span><div><h4>' + esc(e.titre) + '</h4>' + (e.sous ? '<p class="sm">' + esc(e.sous) + '</p>' : '') + '</div>' + st + '</div>' + note + (act ? '<div class="acts noprint">' + act + '</div>' : '') + '</div>';
   });
   if(r.rdv) h += '<div class="acts noprint"><a class="btn btn-navy" href="' + esc(r.rdv) + '" target="_blank" rel="noopener">Réserver ma séance</a></div>';
+  h += '<div class="rb"><h4>Votre code de parcours</h4><p><b>' + esc(String(code).toUpperCase()) + '</b></p><p class="sm">Conservez-le : en revenant sur le site, cliquez sur « Mon espace » et saisissez-le pour retrouver votre parcours. Il figure aussi dans l\'e-mail de bienvenue.</p></div>';
   h += '<p class="fine">Une question ? <a class="txt-link" href="' + wa('Bonjour, une question sur mon parcours d\'accompagnement.') + '" target="_blank" rel="noopener">Écrivez-nous sur WhatsApp</a>. Vous pouvez revoir et télécharger à tout moment le résultat complet de chaque étape terminée, avec le bouton « Revoir mon résultat ».</p>';
   App.set(h);
 }
@@ -1687,7 +1707,7 @@ ACT.pstep = async b => {
     if(!r || !r.ok){ b.disabled = false; return; }
     const par = S.parcours, cl = S.client;
     if(S.pdata && S.pdata.client){ cl.name = cl.name || S.pdata.client; cl.email = cl.email || S.pdata.email || ''; }
-    if(!beginWithCode(r, code)) b.disabled = false; else S.parcours = par;
+    if(!beginWithCode(r, code)) b.disabled = false; else { S.parcours = par; S.stepTitle = b.dataset.titre || ''; }
   }catch(err){ b.disabled = false; }
 };
 ACT.pview = b => { openFull(b.dataset.token); };
@@ -1750,6 +1770,7 @@ function viewResult(k){
       '<p>Le Bilan DISC Miroir explore ces 2 dimensions avec un test plus développé et un rapport complet : votre super-pouvoir et votre point faible pour chaque style, conseils détaillés et plan sur 30 jours.</p>' +
       '<div class="acts"><button class="btn btn-org" data-buy="miroir">Découvrir mon Bilan Miroir · <span data-fcfa="15000"></span></button><a class="btn btn-line" href="' + wa(msg) + '" target="_blank" rel="noopener">Une question ? WhatsApp</a></div></div>';
   }
+  if(!more && !S.parcours) html += packCard();
   html += '<div class="acts noprint"><button class="btn btn-line" data-act="print">Télécharger mon résultat (PDF)</button>' +
     (more ? '<button class="btn btn-navy" data-act="nextres">Test suivant</button>' : '<button class="btn btn-navy" data-act="finish">Terminer</button>') + '</div>';
   App.set(html);
@@ -1998,6 +2019,7 @@ function viewFull(d){
   if(S.parcours){ h += '<div class="rb pguide noprint"><h4>Votre résultat est prêt</h4><p>1. Téléchargez-le en PDF pour le garder. 2. Revenez à votre parcours : l\'étape suivante vous y attend.</p></div>' +
       '<div class="acts noprint"><button class="btn btn-org" data-act="print">Télécharger mon résultat (PDF)</button><button class="btn btn-navy" data-act="pback">Retour à mon parcours</button></div>'; }
   else h += nextStep(dn);
+  if(!S.parcours) h += packCard();
   if(!S.parcours) h += '<div class="next coach"><h3>Et maintenant ?</h3><p>Ce rapport est complet : vous pouvez l\'exploiter seul(e), dès aujourd\'hui, en commençant par un conseil à la fois.</p>' +
     '<p>Si vous souhaitez être accompagné(e) pour passer à l\'action, Déodat vous reçoit en séance individuelle, en ligne ou en présentiel.</p>' +
     '<p class="coach-p"><b>1 heure de coaching : <span data-fcfa="20000"></span></b><br><small>Le même tarif, quel que soit le test que vous avez passé.</small></p>' +
@@ -2196,8 +2218,10 @@ FORM.inscrire = async f => {
   const waBtn = '<a class="btn btn-line" href="' + wa('Bonjour Déodat, je viens de m\'inscrire à l\'accompagnement de 3 mois. Comment réglons-nous ?') + '" target="_blank" rel="noopener">Écrire à Déodat sur WhatsApp</a>';
   if(r && r.ok && r.code){
     S.client = {name: name, email: email, phone: phone};
+    try{ localStorage.setItem(PCKEY, String(r.code).toUpperCase()); }catch(e){}
     App.set('<div class="res-top"><p class="kicker">Bienvenue</p><h2>Merci ' + first + ', votre parcours est ouvert</h2>' +
       '<p>Votre lien d\'accès vient de vous être envoyé à <strong>' + esc(email) + '</strong> (pensez à regarder vos courriers indésirables). Conservez-le : c\'est votre accès personnel.</p>' +
+      '<p>Votre code de parcours : <b>' + esc(r.code) + '</b>. Notez-le : il vous permet de retrouver votre parcours depuis « Mon espace ».</p>' +
       '<p>Pour le règlement et la suite, Déodat vous contacte sur WhatsApp.</p></div>' +
       '<div class="acts"><button class="btn btn-org" type="button" data-act="pcopen" data-code="' + esc(r.code) + '">Ouvrir mon parcours</button>' + waBtn + '</div>');
   }else if(r && r.error === 'ferme'){
