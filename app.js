@@ -2168,7 +2168,52 @@ function openFlow(which, arg){
   else if(which === 'order') viewOrder();
   else viewCode(arg);
 }
+/* ----- Inscription à l'accompagnement de 3 mois (sans paiement en ligne pour le moment : le règlement se convient sur WhatsApp) ----- */
+function viewInscription(){
+  if(!CFG.ENDPOINT){ window.open(wa('Bonjour Déodat, je souhaite démarrer l\'accompagnement de 3 mois. Comment dois-je procéder ?'), '_blank'); App.close(true); return; }
+  S.backFn = null;
+  App.set('<p class="kicker">Accompagnement de 3 mois</p><h2>Je démarre mon accompagnement</h2>' +
+    '<p class="lead sm">Renseignez vos coordonnées : votre parcours est créé tout de suite et votre lien d\'accès vous est envoyé par e-mail. Le règlement (en une seule fois, par Mobile Money) se convient ensuite avec Déodat sur WhatsApp.</p>' +
+    '<div class="err" id="inerr" role="alert" hidden>Merci de renseigner votre nom et une adresse e-mail valide.</div>' +
+    '<form data-form="inscrire" novalidate>' +
+    '<div class="fld"><label for="n-nom">Nom et prénom</label><input id="n-nom" name="fullname" autocomplete="name"></div>' +
+    '<div class="fld"><label for="n-mail">Email</label><input id="n-mail" name="email" type="email" autocomplete="email"></div>' +
+    '<div class="fld"><label for="n-tel">Téléphone / WhatsApp (recommandé)</label><input id="n-tel" name="phone" type="tel" autocomplete="tel"></div>' +
+    '<button class="btn btn-org btn-block" type="submit">Créer mon parcours</button></form>');
+}
+FORM.inscrire = async f => {
+  const name = f.elements.fullname.value.trim(), email = f.elements.email.value.trim(), phone = f.elements.phone.value.trim();
+  if(!name || !/^\S+@\S+\.\S+$/.test(email)){ $('#inerr').hidden = false; return; }
+  const btn = $('button[type=submit]', f); btn.disabled = true; btn.textContent = 'Création de votre parcours…';
+  let r = null;
+  try{
+    const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 40000);
+    const resp = await fetch(CFG.ENDPOINT, {method: 'POST', body: JSON.stringify({type: 'inscription_parcours', nom: name, email: email, telephone: phone}), signal: ctl.signal});
+    clearTimeout(to);
+    r = await resp.json();
+  }catch(err){ r = null; }   // réponse illisible : l'inscription a pu aboutir, l'e-mail fait foi
+  const first = esc(name.split(' ')[0]);
+  const waBtn = '<a class="btn btn-line" href="' + wa('Bonjour Déodat, je viens de m\'inscrire à l\'accompagnement de 3 mois. Comment réglons-nous ?') + '" target="_blank" rel="noopener">Écrire à Déodat sur WhatsApp</a>';
+  if(r && r.ok && r.code){
+    S.client = {name: name, email: email, phone: phone};
+    App.set('<div class="res-top"><p class="kicker">Bienvenue</p><h2>Merci ' + first + ', votre parcours est ouvert</h2>' +
+      '<p>Votre lien d\'accès vient de vous être envoyé à <strong>' + esc(email) + '</strong> (pensez à regarder vos courriers indésirables). Conservez-le : c\'est votre accès personnel.</p>' +
+      '<p>Pour le règlement et la suite, Déodat vous contacte sur WhatsApp.</p></div>' +
+      '<div class="acts"><button class="btn btn-org" type="button" data-act="pcopen" data-code="' + esc(r.code) + '">Ouvrir mon parcours</button>' + waBtn + '</div>');
+  }else if(r && r.error === 'ferme'){
+    App.set('<div class="res-top"><p class="kicker">Mr Tempérament</p><h2>Inscription par WhatsApp</h2><p>Les inscriptions en ligne sont momentanément fermées. Écrivez-nous et nous vous ouvrons votre parcours.</p></div><div class="acts">' + waBtn + '</div>');
+  }else if(r && r.error === 'donnees'){
+    btn.disabled = false; btn.textContent = 'Créer mon parcours'; $('#inerr').hidden = false;
+  }else{
+    App.set('<div class="res-top"><p class="kicker">Mr Tempérament</p><h2>Merci ' + first + '</h2>' +
+      '<p>Votre inscription est bien partie. Votre lien d\'accès arrive par e-mail à <strong>' + esc(email) + '</strong> dans quelques minutes (regardez aussi vos courriers indésirables).</p>' +
+      '<p>S\'il n\'est pas arrivé dans l\'heure, écrivez-nous sur WhatsApp.</p></div><div class="acts">' + waBtn + '</div>');
+  }
+};
+ACT.pcopen = b => { openParcours(b.dataset.code); };
 document.addEventListener('click', e => {
+  const ins = e.target.closest('[data-inscrire]');
+  if(ins){ e.preventDefault(); App.open(); S.parcours = null; viewInscription(); return; }
   const o = e.target.closest('[data-open]');
   if(o){ e.preventDefault(); $('#menu').classList.remove('open'); openFlow(o.dataset.open); return; }
   const gl = e.target.closest('[data-goal]');
