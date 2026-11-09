@@ -695,3 +695,35 @@ footer nav a,#contact a{display:inline-block;padding:11px 4px}
 .pguide h4{margin:0 0 6px}.pguide p,.pguide li{font-size:15px}
 .pstep.pnext{border-color:var(--org);box-shadow:0 0 0 2px rgba(252,88,0,.18)}
 .pnote{margin:8px 0 0;color:var(--muted)}
+
+/* Bloc tarif de l'accompagnement de 3 mois */
+.pack{margin:22px 0 18px;padding:20px;border:1px solid var(--line,#D5DBE8);border-left:4px solid var(--org);border-radius:14px;background:#FFF6EF}
+.pack h3{margin:0 0 12px;font-size:1.05rem;color:var(--navy)}
+.pk-l{list-style:none;margin:0 0 12px;padding:0}
+.pk-l li{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #E9C9B2;font-size:.95rem}
+.pk-l li:last-child{border-bottom:0}
+.pk-l li b{white-space:nowrap;color:var(--navy)}
+.pk-v{margin:6px 0 2px;color:#5B6580}
+.pk-p{margin:2px 0 4px;font-size:1.25rem;color:var(--navy)}
+.pk-p strong{color:var(--org)}
+.pk-e{margin:0 0 8px;font-weight:700;color:var(--navy)}
+.pk-n{margin:0;font-size:.88rem;color:#5B6580}
+.pk-c{margin:12px 0 0;font-size:.92rem}
+.pk-c a{color:var(--org);font-weight:700}
+@media(max-width:560px){.pk-l li{flex-direction:column;gap:2px}}
+
+/* lisibilité du bloc tarif sur le fond bleu de la section */
+.plan .pack{color:var(--ink)}
+.plan .pack h3{color:var(--navy)}
+.plan .pack .pk-l{padding-left:0}
+.plan .pack .pk-l li{color:var(--ink);display:flex;list-style:none}
+.plan .pack .pk-l li span{color:var(--ink)}
+.plan .pack .pk-l li b{color:var(--navy)}
+.plan .pack .pk-v{color:var(--muted)}
+.plan .pack .pk-p{color:var(--navy)}
+.plan .pack .pk-p strong{color:var(--org)}
+.plan .pack .pk-e{color:var(--navy)}
+.plan .pack .pk-n{color:var(--muted)}
+.plan .pk-c{color:#fff}
+.plan .pk-c a{color:var(--tint)}
+.pack [data-fcfa] small{font-size:.72em}
