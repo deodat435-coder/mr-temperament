@@ -1070,7 +1070,7 @@ const App = {
   }
 };
 const S = {mode:'', tests:[], t:0, q:0, hist:[], backFn:null, where:'', resK:null, perm:{}, sc:zero(), res:{}, client:{name:'', email:'', phone:''}, code:'', show:true, label:'', cb:null, onIntake:null, pro:null};
-function reset(){ S.skipped = []; S.perm = {}; S.tests = []; S.t = 0; S.q = 0; S.hist = []; S.sc = zero(); S.res = {}; S.pro = null; S.show = true; S.code = ''; S.label = ''; S.stepTitle = ''; S.doneSent = false; }
+function reset(){ S.skipped = []; S.perm = {}; S.tests = []; S.t = 0; S.q = 0; S.hist = []; S.sc = zero(); S.res = {}; S.pro = null; S.show = true; S.code = ''; S.label = ''; S.stepTitle = ''; S.doneSent = false; S.token = ''; S.pdfSent = ''; }
 
 /* ----- Reprise du test : la progression d'un test avec code est gardée sur l'appareil du client ----- */
 const PKEY = 'mt_progress_v1';
